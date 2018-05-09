@@ -1,8 +1,10 @@
 package com.lish.demo.aspect;
 
+import com.lish.demo.pojo.User;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
@@ -12,6 +14,7 @@ import java.util.Arrays;
  * @date 18-5-9
  */
 @Aspect
+@Component
 public class NotVeryUsefulAspect {
 
     // 切入点表达式
@@ -19,8 +22,8 @@ public class NotVeryUsefulAspect {
     public void anyOldTransfer(){
     }
 
-    @Before(value = "anyOldTransfer() && target(target) && @annotation(needPermission)",argNames = "target,needPermission")
-    public void checkPermission(Object target,NeedPermission needPermission){
+    @Before(value = "anyOldTransfer() && target(target) && @annotation(needPermission) && args(user,..)",argNames = "joinPoint,target,needPermission,user")
+    public void checkPermission(JoinPoint joinPoint,Object target,NeedPermission needPermission,User user){
         System.out.println(target.getClass().getSimpleName() + " 需要 " + needPermission.role() + " 角色 "+ Arrays.toString(needPermission.value()));
     }
 
