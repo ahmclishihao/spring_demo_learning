@@ -4,7 +4,7 @@ package com.lish.demo.thread.volatilee;
  * @author lish [devlishihao@gmail.com]
  * @date 18-5-10
  */
-public class Test {
+public class TestVS {
 
     public static void main(String[] args) {
         for (int i = 0; i < 100; i++) {

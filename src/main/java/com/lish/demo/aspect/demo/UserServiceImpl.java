@@ -2,6 +2,7 @@ package com.lish.demo.aspect.demo;
 
 import com.lish.demo.aspect.NeedLog;
 import com.lish.demo.aspect.NeedPermission;
+import com.lish.demo.aspect.NeedTransaction;
 import com.lish.demo.pojo.User;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @NeedTransaction("repeatable")
     @NeedLog("xxx 正在删除用户")
     public boolean delUser(User user) {
         System.out.println("删除一个用户");
