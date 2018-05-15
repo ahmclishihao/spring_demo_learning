@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 使用同步锁控制线程
- * 双Lock重入锁，Condition内置监视器，生产者和消费者各有一个锁，让入队的同时可以出队
+ * 双Lock重入锁，Condition内置监视器，生产者和消费者各有一个锁，让入队的同时可以出队，这种实现方式会有无法出队的问题
  *
  * @author lish [devlishihao@gmail.com]
  * @date 18-5-11
@@ -59,25 +59,32 @@ public class TestDoubleLockConsumer {
         public void run() {
             while (true) {
                 // 生产者中只有一个人可以生产
-                PRODUCER_LOCK.lock();
                 try {
+                    PRODUCER_LOCK.lockInterruptibly();
                     while (resCount.get() == BUFFER_SIZE) {
                         FILL_CON.await();
                     }
                     process();
-                    if(resCount.get() < BUFFER_SIZE){
+                    if (resCount.get() < BUFFER_SIZE) {
                         FILL_CON.signalAll(); // 通知其他生产者进行生产
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } finally {
+                    PRODUCER_LOCK.unlock();
                 }
-                PRODUCER_LOCK.unlock();
 
                 // 为消费者检测是否可以消费
-                if(resCount.get() > 0 ){
-                    CONSUMER_LOCK.lock();
-                    EMPTY_CON.signalAll();
-                    CONSUMER_LOCK.unlock();
+                if (resCount.get() > 0) {
+                    try {
+                        CONSUMER_LOCK.lockInterruptibly();
+                        EMPTY_CON.signalAll();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        CONSUMER_LOCK.unlock();
+
+                    }
                 }
             }
         }
@@ -86,7 +93,7 @@ public class TestDoubleLockConsumer {
             fewSleep();
             String resource = Thread.currentThread().toString() + " " + System.nanoTime();
             System.out.println("\u001b[33;44mProducer:" + resource + " " + resCount + "\u001b[0m");
-            resources.add(resource);
+            resources.offer(resource);
             resCount.getAndIncrement();
         }
     }
@@ -101,25 +108,31 @@ public class TestDoubleLockConsumer {
         public void run() {
             while (true) {
                 // 消费者中只有一个人可以消费
-                CONSUMER_LOCK.lock();
                 try {
+                    CONSUMER_LOCK.lockInterruptibly();
                     while (resCount.get() == 0) {
                         EMPTY_CON.await();
                     }
                     process();
-                    if(resCount.get() > 0){
+                    if (resCount.get() > 0) {
                         EMPTY_CON.signalAll(); // 通知其他消费进行消费
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } finally {
+                    CONSUMER_LOCK.unlock();
                 }
-                CONSUMER_LOCK.unlock();
 
                 // 为生产者检测是否可以继续生产
-                if(resCount.get() < BUFFER_SIZE){
-                    PRODUCER_LOCK.lock();
-                    FILL_CON.signalAll();
-                    PRODUCER_LOCK.unlock();
+                if (resCount.get() < BUFFER_SIZE) {
+                    try {
+                        PRODUCER_LOCK.lockInterruptibly();
+                        FILL_CON.signalAll();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        PRODUCER_LOCK.unlock();
+                    }
                 }
             }
         }
@@ -127,7 +140,7 @@ public class TestDoubleLockConsumer {
         public void process() {
             fewSleep();
             Object remove = resources.poll();
-            if(remove != null){
+            if (remove != null) {
                 resCount.getAndDecrement();
                 System.out.println("\u001b[34;43m" + Thread.currentThread() + ":" + remove + " " + resCount + "\u001b[0m");
             }
