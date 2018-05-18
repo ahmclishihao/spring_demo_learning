@@ -4,7 +4,6 @@ import com.lish.demo.aop.ServiceImpl;
 import com.lish.demo.aop.ServiceInterface;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;

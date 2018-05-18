@@ -1,6 +1,5 @@
 package com.lish.demo;
 
-import com.lish.demo.aspect.NotVeryUsefulAspect;
 import com.lish.demo.aspect.demo.UserService;
 import com.lish.demo.pojo.User;
 import org.springframework.context.ApplicationContext;
