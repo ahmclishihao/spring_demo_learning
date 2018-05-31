@@ -37,6 +37,12 @@ public class TestThreadPool {
 
         }
 
+        new ThreadPoolExecutor(10, 100, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                return null;
+            }
+        },new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
 
